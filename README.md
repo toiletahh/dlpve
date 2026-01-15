@@ -32,7 +32,3 @@ Access your new Proxmox web UI at:
 
 * `https://<detected-ip>:8006`
 * or `https://<detected-ip>:443`
-
----
-
-Made by https://discord.gg/compute owner
