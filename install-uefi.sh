@@ -35,8 +35,14 @@ fi
 SHORT_HOSTNAME="${NEW_HOSTNAME%%.*}"
 
 figlet "Setting Hostname"
+
+# FIX: Mo khoa file truoc khi ghi de tranh loi "Not allowed to update"
+chattr -i /etc/hostname || true 
+
 hostnamectl set-hostname "$NEW_HOSTNAME"
 echo "$NEW_HOSTNAME" > /etc/hostname
+
+# Khoa lai de Google Guest Agent khong tu doi ten may sau khi reboot
 chattr +i /etc/hostname
 
 echo "Updating /etc/hosts with hostname and IP..."
@@ -48,7 +54,7 @@ ff02::1         ip6-allnodes
 ff02::2         ip6-allrouters
 EOF
 
-# FIX UEFI: Go bo grub-pc va cai dat grub-efi-amd64
+# FIX UEFI: Go bo grub-pc va cai dat grub-efi-amd64 cho chuan UEFI
 apt-get purge -y grub-pc || true
 apt-get install -y grub-efi-amd64
 
@@ -122,7 +128,7 @@ EOD
 
 systemctl enable --now isc-dhcp-server
 
-# FIX PVE-CLUSTER: Reset db va cap lai chung chi truoc khi reboot
+# FIX PVE-CLUSTER: Reset db de khớp với hostname mới và cấp lại chứng chỉ SSL
 rm -f /var/lib/pve-cluster/config.db
 systemctl restart pve-cluster
 pvecm updatecerts -f
@@ -147,10 +153,12 @@ systemctl enable --now port443forward
 
 clear
 figlet "Cleaning"
+# Loai bo os-prober de tranh loi kẹt GRUB khi update
 apt remove -y --allow-remove-essential linux-image-amd64 'linux-image-6.1*' os-prober || true
 update-grub
 
 figlet "Done"
 echo "Access: https://$HOST_IP"
+echo "Rebooting in 5 seconds..."
 sleep 5
 reboot
